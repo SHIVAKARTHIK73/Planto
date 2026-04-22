@@ -1,9 +1,10 @@
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
+from fastapi import HTTPException, status
 
 SECRET_KEY = "mysecretkey"
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
+ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 24 hours
 
 def create_access_token(data: dict):
     to_encode = data.copy()
@@ -11,9 +12,6 @@ def create_access_token(data: dict):
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
-
-from jose import JWTError, jwt
-from fastapi import HTTPException, status
 
 def verify_token(token: str):
     try:

@@ -20,4 +20,3 @@ class OrderItem(Base):
     product_id = Column(Integer, ForeignKey("products.id"))
     quantity = Column(Integer)
     price = Column(Float)
- 

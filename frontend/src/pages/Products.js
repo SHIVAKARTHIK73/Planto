@@ -37,6 +37,7 @@ function Products() {
     API.get("/products/categories").then(r => setCategories(r.data)).catch(() => {});
   }, []);
 
+  
   useEffect(() => {
     const timer = setTimeout(fetchProducts, 300);
     return () => clearTimeout(timer);

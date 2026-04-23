@@ -1,9 +1,11 @@
 import { useEffect, useState, useCallback } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import API from "../services/api";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
-import { useNavigate } from "react-router-dom";
+
+const PLANT_EMOJIS = ["🪴", "🌵", "🌿", "🌱", "🌳", "🍀", "🎋", "🌺"];
 
 function Products() {
   const [products, setProducts] = useState([]);
@@ -30,26 +32,26 @@ function Products() {
     } finally {
       setLoading(false);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search, activeCategory]);
 
   useEffect(() => {
     API.get("/products/categories").then(r => setCategories(r.data)).catch(() => {});
   }, []);
 
-  
   useEffect(() => {
     const timer = setTimeout(fetchProducts, 300);
     return () => clearTimeout(timer);
   }, [fetchProducts]);
 
+  // Add to cart without navigating away
   const handleAddToCart = async (productId, e) => {
-    e.stopPropagation();
+    e.stopPropagation(); // prevent card click
     if (!user) { navigate("/login"); return; }
     setAdding(a => ({ ...a, [productId]: true }));
     try {
-      await addToCart(productId);
-      toast("Added to cart", "success");
+      await addToCart(productId, 1);
+      toast("Added to cart 🌿", "success");
     } catch (err) {
       toast(err.response?.data?.detail || "Could not add to cart", "error");
     } finally {
@@ -57,39 +59,41 @@ function Products() {
     }
   };
 
-  const getStatusBadge = (stock) => {
-    if (stock === 0) return <span className="stock-badge out">Out of Stock</span>;
-    if (stock <= 5) return <span className="stock-badge low">Only {stock} left</span>;
-    return null;
+  // Clicking the card opens product detail
+  const handleCardClick = (productId) => {
+    navigate(`/product/${productId}`);
   };
 
-  const getEmoji = (category) => {
-    const map = { Electronics: "⚡", Fashion: "👗", Beauty: "✨", Home: "🏠", Sports: "⚽", Books: "📚", Food: "🍜" };
-    return map[category] || "◆";
-  };
+  const getEmoji = (idx) => PLANT_EMOJIS[idx % PLANT_EMOJIS.length];
 
   return (
     <div className="page">
       <div className="container">
         {/* Hero */}
-        <div className="hero">
-          <p className="hero-eyebrow">New Collection 2025</p>
-          <h1 className="hero-title">Curated for the<br /><em>discerning few</em></h1>
-          <p className="hero-sub">Premium goods, thoughtfully selected. Free delivery on orders above ₹999.</p>
+        <div className="shop-hero">
+          <h1 className="shop-hero-title">
+            Our Plant <em>Collection</em>
+          </h1>
+          <p className="shop-hero-sub">
+            Hand-picked, healthy plants delivered right to your doorstep. Click any plant for details.
+          </p>
         </div>
 
         {/* Filter bar */}
         <div className="filter-bar">
-          <input
-            className="search-input"
-            placeholder="Search products…"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
+          <div className="search-wrap">
+            <span className="search-icon">🔍</span>
+            <input
+              className="search-input"
+              placeholder="Search plants…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
           <button
             className={`filter-chip ${activeCategory === "" ? "active" : ""}`}
             onClick={() => setActiveCategory("")}
-          >All</button>
+          >All Plants</button>
           {categories.map(cat => (
             <button
               key={cat}
@@ -104,10 +108,10 @@ function Products() {
           <div className="loading-full"><div className="spinner" /></div>
         ) : products.length === 0 ? (
           <div className="empty-state">
-            <div className="empty-icon">◇</div>
-            <h3 className="empty-title">No products found</h3>
+            <div className="empty-icon">🌵</div>
+            <h3 className="empty-title">No plants found</h3>
             <p className="empty-sub">Try adjusting your search or filters</p>
-            <button className="btn-ghost" onClick={() => { setSearch(""); setActiveCategory(""); }}>
+            <button className="btn-outline" onClick={() => { setSearch(""); setActiveCategory(""); }}>
               Clear Filters
             </button>
           </div>
@@ -117,16 +121,40 @@ function Products() {
               <div
                 key={product.id}
                 className="product-card"
-                style={{ animationDelay: `${i * 0.04}s` }}
+                style={{ animationDelay: `${i * 0.05}s`, cursor: "pointer" }}
+                onClick={() => handleCardClick(product.id)}
+                title="Click to view details"
               >
                 <div className="product-img-wrap">
                   {product.image_url ? (
-                    <img src={product.image_url} alt={product.name} onError={e => { e.target.style.display = "none"; }} />
+                    <img
+                      src={product.image_url}
+                      alt={product.name}
+                      onError={(e) => { e.target.style.display = "none"; }}
+                    />
                   ) : (
-                    <div className="product-img-placeholder">{getEmoji(product.category)}</div>
+                    <div className="product-img-placeholder">{getEmoji(i)}</div>
                   )}
-                  {getStatusBadge(product.stock)}
+                  {product.stock === 0 && <span className="stock-badge out">Out of Stock</span>}
+                  {product.stock > 0 && product.stock <= 5 && (
+                    <span className="stock-badge low">Only {product.stock} left</span>
+                  )}
+                  {/* "View Details" overlay on hover */}
+                  <div style={{
+                    position: "absolute", inset: 0,
+                    background: "rgba(88,139,118,0.0)",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    transition: "background 0.25s",
+                    fontSize: 13, color: "white", fontWeight: 500,
+                    letterSpacing: "0.05em", opacity: 0,
+                    transition: "opacity 0.25s, background 0.25s",
+                  }}
+                    className="product-hover-overlay"
+                  >
+                    View Details →
+                  </div>
                 </div>
+
                 <div className="product-info">
                   <p className="product-category">{product.category}</p>
                   <h3 className="product-name">{product.name}</h3>
@@ -150,6 +178,14 @@ function Products() {
           </div>
         )}
       </div>
+
+      {/* CSS for hover overlay via style tag */}
+      <style>{`
+        .product-card:hover .product-hover-overlay {
+          opacity: 1 !important;
+          background: rgba(88,139,118,0.45) !important;
+        }
+      `}</style>
     </div>
   );
 }

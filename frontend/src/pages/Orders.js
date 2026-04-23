@@ -3,7 +3,10 @@ import API from "../services/api";
 import { Link } from "react-router-dom";
 
 function statusClass(status) {
-  const map = { Pending: "status-pending", Shipped: "status-shipped", Delivered: "status-delivered", Cancelled: "status-cancelled" };
+  const map = {
+    Pending: "status-pending", Processing: "status-processing",
+    Shipped: "status-shipped", Delivered: "status-delivered", Cancelled: "status-cancelled"
+  };
   return `status-badge ${map[status] || "status-pending"}`;
 }
 
@@ -16,13 +19,18 @@ function OrderDetailModal({ order, onClose }) {
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" onClick={e => e.stopPropagation()}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <div>
-            <h3 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 28, fontWeight: 300 }}>
+            <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 26, fontWeight: 400 }}>
               Order #{order.order_id}
             </h3>
-            <span className={statusClass(order.status)}>{order.status}</span>
+            <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 8 }}>
+              <span className={statusClass(order.status)}>{order.status}</span>
+              <span style={{ fontSize: 12, color: "var(--muted)" }}>
+                {new Date(order.created_at).toLocaleDateString("en-IN", { year: "numeric", month: "long", day: "numeric" })}
+              </span>
+            </div>
           </div>
           <button className="modal-close" onClick={onClose}>×</button>
         </div>
@@ -34,10 +42,10 @@ function OrderDetailModal({ order, onClose }) {
             {detail.items.map((item, i) => (
               <div key={i} className="modal-item">
                 <div>
-                  <div className="modal-item-name">{item.product_name}</div>
+                  <div className="modal-item-name">🌿 {item.product_name}</div>
                   <div className="modal-item-meta">Qty: {item.quantity} · ₹{item.price.toLocaleString("en-IN")} each</div>
                 </div>
-                <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 18 }}>
+                <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 17 }}>
                   ₹{item.item_total.toLocaleString("en-IN")}
                 </div>
               </div>
@@ -45,9 +53,6 @@ function OrderDetailModal({ order, onClose }) {
             <div className="modal-total">
               <span>Total</span>
               <span>₹{detail.total_amount.toLocaleString("en-IN")}</span>
-            </div>
-            <div style={{ fontSize: 12, color: "var(--muted)" }}>
-              Placed on {new Date(detail.created_at).toLocaleDateString("en-IN", { year: "numeric", month: "long", day: "numeric" })}
             </div>
           </>
         )}
@@ -74,15 +79,15 @@ function Orders() {
     <div className="page">
       <div className="container">
         <div className="orders-list">
-          <h2 className="page-heading">My Orders</h2>
-          <p className="page-sub">{orders.length} order{orders.length !== 1 ? "s" : ""} placed</p>
+          <h2 className="page-heading">My Orders 🌿</h2>
+          <p className="page-sub">{orders.length} order{orders.length !== 1 ? "s" : ""} total</p>
 
           {orders.length === 0 ? (
             <div className="empty-state">
-              <div className="empty-icon">◇</div>
+              <div className="empty-icon">🪴</div>
               <h3 className="empty-title">No orders yet</h3>
-              <p className="empty-sub">Your order history will appear here once you make a purchase.</p>
-              <Link to="/"><button className="btn-gold">Start Shopping</button></Link>
+              <p className="empty-sub">Start your plant journey today!</p>
+              <Link to="/shop"><button className="btn-primary">Shop Plants</button></Link>
             </div>
           ) : (
             orders.map((order, i) => (
@@ -91,16 +96,13 @@ function Orders() {
                   <span>Order</span>
                   #{order.order_id}
                 </div>
-
                 <div>
                   <div className="order-date">
-                    {new Date(order.created_at).toLocaleDateString("en-IN", { year: "numeric", month: "short", day: "numeric" })}
+                    {new Date(order.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
                   </div>
                 </div>
-
                 <div className="order-amount">₹{order.total_amount.toLocaleString("en-IN")}</div>
                 <span className={statusClass(order.status)}>{order.status}</span>
-
                 <button className="detail-btn" onClick={() => setSelected(order)}>View Details</button>
               </div>
             ))

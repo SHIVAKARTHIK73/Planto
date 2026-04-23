@@ -11,7 +11,7 @@ export function ToastProvider({ children }) {
     setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), 3500);
   }, []);
 
-  const icons = { success: "✓", error: "✕", info: "◆" };
+  const icons = { success: "✓", error: "✕", info: "🌿" };
 
   return (
     <ToastContext.Provider value={toast}>
@@ -19,7 +19,7 @@ export function ToastProvider({ children }) {
       <div className="toast-container">
         {toasts.map(t => (
           <div key={t.id} className={`toast ${t.type}`}>
-            <span>{icons[t.type]}</span>
+            <span className="toast-icon">{icons[t.type]}</span>
             {t.message}
           </div>
         ))}

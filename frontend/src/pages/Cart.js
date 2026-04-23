@@ -26,16 +26,16 @@ function Cart() {
 
   const handleRemove = async (productId) => {
     await removeFromCart(productId);
-    toast("Item removed", "info");
+    toast("Plant removed from cart", "info");
   };
 
   const placeOrder = async () => {
     setPlacing(true);
     try {
-      const res = await API.post("/orders/");
+      await API.post("/orders/");
       await fetchCart();
-      toast("Order placed successfully!", "success");
-      setTimeout(() => navigate("/orders"), 1200);
+      toast("Order placed! Your plants are on their way 🌿", "success");
+      setTimeout(() => navigate("/orders"), 1400);
     } catch (err) {
       toast(err.response?.data?.detail || "Failed to place order", "error");
     } finally {
@@ -50,11 +50,11 @@ function Cart() {
     return (
       <div className="page">
         <div className="container">
-          <div className="empty-state" style={{ paddingTop: 120 }}>
-            <div className="empty-icon">◇</div>
+          <div className="empty-state" style={{ paddingTop: 100 }}>
+            <div className="empty-icon">🛒</div>
             <h3 className="empty-title">Your cart is empty</h3>
-            <p className="empty-sub">Discover our curated collection and add items to your cart.</p>
-            <Link to="/"><button className="btn-gold">Explore Products</button></Link>
+            <p className="empty-sub">Add some beautiful plants to get started!</p>
+            <Link to="/shop"><button className="btn-primary">Browse Plants 🌿</button></Link>
           </div>
         </div>
       </div>
@@ -65,18 +65,18 @@ function Cart() {
     <div className="page">
       <div className="container">
         <div className="cart-layout">
-          {/* Items */}
           <div>
-            <h2 className="page-heading">Your Cart</h2>
-            <p className="page-sub">{cartItems.length} item{cartItems.length !== 1 ? "s" : ""}</p>
+            <h2 className="page-heading">Your Cart 🛒</h2>
+            <p className="page-sub">{cartItems.length} item{cartItems.length !== 1 ? "s" : ""} in your cart</p>
 
             <div className="cart-items">
               {cartItems.map(item => (
                 <div key={item.product_id} className="cart-item">
                   {item.image_url ? (
-                    <img className="cart-item-img" src={item.image_url} alt={item.name} onError={e => e.target.style.display = "none"} />
+                    <img className="cart-item-img" src={item.image_url} alt={item.name}
+                      onError={(e) => { e.target.style.display = "none"; }} />
                   ) : (
-                    <div className="cart-item-img-placeholder">◆</div>
+                    <div className="cart-item-img-placeholder">🪴</div>
                   )}
 
                   <div>
@@ -88,7 +88,7 @@ function Cart() {
                       <button className="qty-btn" onClick={() => handleQty(item.product_id, item.quantity + 1, item.stock)}>+</button>
                       <button
                         onClick={() => handleRemove(item.product_id)}
-                        style={{ marginLeft: 8, background: "none", border: "none", color: "var(--muted)", cursor: "pointer", fontSize: 12, letterSpacing: "0.06em" }}
+                        style={{ marginLeft: 10, background: "none", border: "none", color: "var(--muted)", cursor: "pointer", fontSize: 12 }}
                       >Remove</button>
                     </div>
                   </div>
@@ -101,7 +101,6 @@ function Cart() {
             </div>
           </div>
 
-          {/* Summary */}
           <div className="order-summary">
             <h3 className="summary-title">Order Summary</h3>
             <div className="summary-row">
@@ -109,12 +108,16 @@ function Cart() {
               <span>₹{total.toLocaleString("en-IN")}</span>
             </div>
             <div className="summary-row">
-              <span>Shipping</span>
-              <span>{shipping === 0 ? <span style={{ color: "var(--green)" }}>Free</span> : `₹${shipping}`}</span>
+              <span>Delivery</span>
+              <span>
+                {shipping === 0
+                  ? <span style={{ color: "var(--forest)", fontWeight: 500 }}>Free 🎉</span>
+                  : `₹${shipping}`}
+              </span>
             </div>
             {shipping > 0 && (
-              <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 4, marginBottom: 4 }}>
-                Add ₹{(999 - total).toFixed(0)} more for free shipping
+              <div style={{ fontSize: 11, color: "var(--muted)", padding: "4px 0 8px", borderBottom: "1px solid var(--border)" }}>
+                🌿 Add ₹{(999 - total).toFixed(0)} more for free delivery
               </div>
             )}
             <div className="summary-row total">
@@ -122,16 +125,12 @@ function Cart() {
               <span>₹{grandTotal.toLocaleString("en-IN")}</span>
             </div>
 
-            <button
-              className="place-order-btn"
-              onClick={placeOrder}
-              disabled={placing}
-            >
-              {placing ? "Placing Order…" : "Place Order"}
+            <button className="place-order-btn" onClick={placeOrder} disabled={placing}>
+              {placing ? "Placing Order…" : "Place Order 🌿"}
             </button>
 
-            <div style={{ marginTop: 16, textAlign: "center", fontSize: 11, color: "var(--muted)", letterSpacing: "0.06em" }}>
-              🔒 Secure checkout · Free returns
+            <div style={{ marginTop: 14, textAlign: "center", fontSize: 11, color: "var(--muted)" }}>
+              🔒 Secure checkout · 🌱 Eco-friendly packaging
             </div>
           </div>
         </div>
